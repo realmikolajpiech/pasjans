@@ -683,8 +683,8 @@ class Game:
                             found_next_final_selection = True
                             break
                     if not found_next_final_selection:
-                        if direction == -1 and current_final_idx == 0: # Próba przejścia w lewo z pierwszej kupki końcowej
-                            if self.first_reveal_done and (self.current_reserve_card_obj or (self.difficulty == 'trudny' and any(self.visible_draw3_cards))):
+                        if direction == -1: 
+                            if self.first_reveal_done and (self.current_reserve_card_obj or (self.difficulty == 'trudny' and any(c for c in self.visible_draw3_cards if c is not None))):
                                 self.selected_cards_coords = [[0, -1]] # Na rezerwę
             else: # Nawigacja w tableau
                 new_col_candidate = current_col_sel
