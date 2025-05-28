@@ -1,10 +1,10 @@
-# Pasjans w Konsoli 🃏
+# Gra Pasjans w konsoli 🃏
 
-Cześć! To mój projekt zaliczeniowy – klasyczna gra w Pasjansa, działająca w całości w konsoli. Starałem się, aby była funkcjonalna i możliwie estetyczna, jak na warunki terminalowe.
+Moja klasyczna gra w Pasjansa, działająca w całości w konsoli, stworzona na drugi etap Gigathonu.
 
 ## Jak uruchomić?
 
-Do uruchomienia gry potrzebny jest Python (projekt był tworzony i testowany na Pythonie 3.12.3)
+Do uruchomienia gry potrzebny jest Python (projekt był tworzony i testowany w Pythonie 3.12.3 na Ubuntu)
 
 1.  **Pobierz projekt:** Rozpakuj archiwum ZIP z projektem.
 2.  **Zainstaluj biblioteki:**
