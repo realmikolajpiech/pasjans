@@ -20,7 +20,6 @@ Do uruchomienia gry potrzebny jest Python (projekt był tworzony i testowany na 
         ```bash
         python pasjans.py
         ```
-    *   (Jeśli główny plik skryptu ma inną nazwę, użyj tej właściwej nazwy).
 
 Gra powinna się teraz uruchomić.
 
