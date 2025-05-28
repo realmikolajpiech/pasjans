@@ -25,7 +25,7 @@ class Card:
     def is_red(self):
         return self.suit in "♥♦"
     
-    # Zwraca surowe dane karty do zapisu stanu.
+    # Zwraca surowe dane karty do zapisu stanu
     def get_raw_data(self):
         return [self.value, self.suit, self.hidden]
 
@@ -77,8 +77,7 @@ class Game:
 
         if not scores:
             print("")
-            self.rich_console.print(Panel(Text("Brak zapisanych wyników. Wygraj, aby się tu pojawić!", justify="center"),
-                                        title="[dim]Tabela wyników[/dim]", border_style="dim white"))
+            self.rich_console.print(Panel(Text("Brak zapisanych wyników. Wygraj, aby się tu pojawić!", justify="center"), title="[dim]Tabela wyników[/dim]", border_style="dim white"))
             return False
 
         def sort_key(score):
@@ -319,17 +318,17 @@ class Game:
         
         if self.difficulty == 'trudny':
             draw3_block_lines = [""] * self.CARD_HEIGHT
-            if not self.first_reveal_done:
+            if not self.first_reveal_done: # Karty ukryte w rezerwie
                 empty_partial = [" " * self.DRAW3_PARTIAL_WIDTH] * self.CARD_HEIGHT
-                empty_full_slot_lines = [" " * self.CARD_WIDTH] * self.CARD_HEIGHT
+                empty_full_slot_lines = [" " * (self.CARD_WIDTH - 2)] * self.CARD_HEIGHT
                 if is_sel_reserve_area:
-                     empty_full_slot_lines = [reserve_border_color_for_empty_slot+l+Style.RESET_ALL for l in ["┌─────┐"]+["│     │"]*3+["└─────┘"]]
+                    empty_full_slot_lines = [reserve_border_color_for_empty_slot+l+Style.RESET_ALL for l in ["┌─────┐"]+["│     │"]*3+["└─────┘"]]
 
                 for i in range(self.CARD_HEIGHT):
                     draw3_block_lines[i] += empty_partial[i]
                     draw3_block_lines[i] += empty_partial[i]
                     draw3_block_lines[i] += empty_full_slot_lines[i]
-            else:
+            else: # Karty pokazane w rezerwie
                 card1_disp = self.visible_draw3_cards[0]
                 card2_disp = self.visible_draw3_cards[1]
                 active_slot_content = self.current_reserve_card_obj
@@ -359,19 +358,22 @@ class Game:
                 if is_sel_reserve_area and not (self.confirmed_selection and self.original_selected_coords and self.original_selected_coords[0] == [0,-1] and self.selected_cards_coords[0] == [0,-1]):
                     border_for_active_slot = Fore.GREEN if self.confirmed_selection else Fore.YELLOW
                 
-                if self.confirmed_selection and self.original_selected_coords and \
-                   self.original_selected_coords[0] == [0,-1] and \
-                   is_sel_reserve_area:
-                     card3_lines = self._get_card_face_lines(self.current_reserve_card_obj, Fore.GREEN, width=self.CARD_WIDTH)
+                if self.confirmed_selection and self.original_selected_coords and self.original_selected_coords[0] == [0,-1] and is_sel_reserve_area:
+                    card3_lines = self._get_card_face_lines(self.current_reserve_card_obj, Fore.GREEN, width=self.CARD_WIDTH)
                 elif active_slot_content:
-                     card3_lines = self._get_card_face_lines(active_slot_content, border_for_active_slot, width=self.CARD_WIDTH)
+                    card3_lines = self._get_card_face_lines(active_slot_content, border_for_active_slot, width=self.CARD_WIDTH)
                 else:
                     card3_lines = [reserve_border_color_for_empty_slot+l+Style.RESET_ALL for l in ["┌─────┐"]+["│     │"]*3+["└─────┘"]]
                 
                 for i in range(self.CARD_HEIGHT):
                     draw3_block_lines[i] += card3_lines[i]
+            
             blocks.append(draw3_block_lines)
-            blocks.append([" "] * self.CARD_HEIGHT)
+
+            if self.first_reveal_done:
+                blocks.append([""] * self.CARD_HEIGHT) 
+            else:
+                blocks.append([" "] * self.CARD_HEIGHT)
         else: # Tryb łatwy
             if not self.first_reveal_done:
                 if is_sel_reserve_area:
@@ -433,23 +435,36 @@ class Game:
                     border_empty_final = Fore.GREEN if self.confirmed_selection else Fore.YELLOW
                 blocks.append([border_empty_final+l+Style.RESET_ALL for l in ["┌─────┐"]+["│     │"]*3+["└─────┘"]])
         
+        # Wypisanie wszystkich bloków z odpowiednim odstępem
         for r in range(self.CARD_HEIGHT):
-            line_parts = []
+            current_line_output = ""
             for block_item_idx, block_item_content in enumerate(blocks):
-                if self.difficulty == 'trudny' and block_item_idx == 1:
+                part_to_add = ""
+                if self.difficulty == 'trudny' and block_item_idx == 1: # Blok draw3
                     if r < len(block_item_content):
-                        line_parts.append(block_item_content[r])
+                        part_to_add = block_item_content[r]
                     else:
-                        line_parts.append(" " * (self.DRAW3_PARTIAL_WIDTH * 2 + self.CARD_WIDTH))
-                elif self.difficulty == 'trudny' and block_item_idx == 2:
-                     line_parts.append(block_item_content[r])
+                        part_to_add = " " * (self.DRAW3_PARTIAL_WIDTH * 2 + self.CARD_WIDTH)
+                elif self.difficulty == 'trudny' and block_item_idx == 2: # Blok separatora
+                    if r < len(block_item_content):
+                        part_to_add = block_item_content[r]
+                else: # Reszta bloków
+                    if r < len(block_item_content):
+                        part_to_add = block_item_content[r]
+                    else:
+                        part_to_add = " " * self.CARD_WIDTH
+                
+                if block_item_idx == 0:
+                    current_line_output += part_to_add
                 else:
-                    if r < len(block_item_content):
-                        line_parts.append(block_item_content[r])
+                    if self.difficulty == 'trudny' and block_item_idx == 3 and \
+                       blocks[2][r] == "" :
+                        current_line_output += " " + part_to_add
                     else:
-                        line_parts.append(" " * self.CARD_WIDTH)
-            if line_parts:
-                print("  ".join(line_parts))
+                        current_line_output += "  " + part_to_add
+
+            if current_line_output.strip():
+                print(current_line_output)
 
     # Rozdaje karty do kolumn tableau i tworzy stos rezerwowy
     def _generate_tableau_and_reserve(self):
@@ -545,9 +560,8 @@ class Game:
     # Pomocnicza funkcja do cofania nieudanego ruchu w obrębie tableau
     def _undo_failed_tableau_move(self):
         if not self.original_selected_coords or not self.selected_cards_coords:
-            self.message="Błąd krytyczny: Brak danych do cofnięcia ruchu tableau."
             if self.original_selected_coords:
-                 self.selected_cards_coords = [c[:] for c in self.original_selected_coords]
+                self.selected_cards_coords = [c[:] for c in self.original_selected_coords]
             return
 
         current_col = self.selected_cards_coords[0][0]
@@ -556,7 +570,6 @@ class Game:
 
         if not (0 <= current_col < len(self.tableau) and \
                 current_min_row + num_moved_cards <= len(self.tableau[current_col])):
-            self.message = "Błąd: Niespójność danych przy cofaniu ruchu tableau."
             self.selected_cards_coords = [c[:] for c in self.original_selected_coords]
             return
 
@@ -569,7 +582,7 @@ class Game:
         if 0 <= original_col_src < len(self.tableau):
             self.tableau[original_col_src].extend(cards_to_put_back)
         else:
-            self.message = "Błąd krytyczny: Nie można przywrócić kart do oryginalnej kolumny."
+            self.message = "Błąd"
 
         self.selected_cards_coords = [c[:] for c in self.original_selected_coords]
 
@@ -866,7 +879,6 @@ class Game:
                 card_to_validate = self.moving_final_card_obj
             
             if not card_to_validate:
-                self.message = "Błąd: Karta nie jest na docelowej kupce (Final->Final)."
                 if self.moving_final_card_obj:
                     self.final_stacks[original_final_pile_idx].append(self.moving_final_card_obj)
                 self.selected_cards_coords = [[source_col_orig, -1]]
