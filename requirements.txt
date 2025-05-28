@@ -1,0 +1,4 @@
+colorama
+keyboard
+pyfiglet
+rich
